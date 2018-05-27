@@ -1,4 +1,4 @@
-package org.evwhite.algorithmapi;
+package org.evwhite.algorithmapi.response;
 
 public class Answer {
 

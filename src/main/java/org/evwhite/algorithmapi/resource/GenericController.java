@@ -1,6 +1,6 @@
 package org.evwhite.algorithmapi.resource;
 
-import org.evwhite.algorithmapi.Answer;
+import org.evwhite.algorithmapi.response.Answer;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

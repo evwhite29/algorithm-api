@@ -1,6 +1,6 @@
 package org.evwhite.algorithmapi.resource;
 
-import org.evwhite.algorithmapi.Answer;
+import org.evwhite.algorithmapi.response.Answer;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.instanceOf;
