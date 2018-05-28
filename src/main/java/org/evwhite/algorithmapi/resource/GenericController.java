@@ -1,13 +1,18 @@
 package org.evwhite.algorithmapi.resource;
 
+import org.evwhite.algorithmapi.Coordinate;
+import org.evwhite.algorithmapi.GameConfig;
 import org.evwhite.algorithmapi.response.Answer;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("/algorithms")
@@ -38,4 +43,8 @@ public class GenericController {
         return new Answer(counter.getAndIncrement(), resultBuilder.toString());
     }
 
+    @RequestMapping(value = "/gameoflife", method = POST)
+    public List<Coordinate> playLife(@RequestBody GameConfig gameConfig) {
+        return gameConfig.getStartingAlive();
+    }
 }
