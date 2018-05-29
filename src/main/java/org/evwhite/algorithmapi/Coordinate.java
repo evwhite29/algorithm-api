@@ -7,27 +7,27 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(using = CoordinateDeserializer.class)
 public class Coordinate {
 
-    private int horizontal;
-    private int vertical;
+    private int row;
+    private int column;
 
-    public Coordinate(int horizontal, int vertical) {
-        this.horizontal = horizontal;
-        this.vertical = vertical;
+    public Coordinate(int row, int column) {
+        this.row = row;
+        this.column = column;
     }
 
-    public int getHorizontal() {
-        return horizontal;
+    public int getRow() {
+        return row;
     }
 
-    public void setHorizontal(int horizontal) {
-        this.horizontal = horizontal;
+    public void setRow(int row) {
+        this.row = row;
     }
 
-    public int getVertical() {
-        return vertical;
+    public int getColumn() {
+        return column;
     }
 
-    public void setVertical(int vertical) {
-        this.vertical = vertical;
+    public void setColumn(int column) {
+        this.column = column;
     }
 }

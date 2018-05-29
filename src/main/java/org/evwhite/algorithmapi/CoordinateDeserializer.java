@@ -12,8 +12,8 @@ public class CoordinateDeserializer extends JsonDeserializer<Coordinate> {
     @Override
     public Coordinate deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode jsonNode = jsonParser.getCodec().readTree(jsonParser);
-        int horizontalCoordinate = jsonNode.get("horizontal").asInt();
-        int verticalCoordinate = jsonNode.get("vertical").asInt();
-        return new Coordinate(horizontalCoordinate, verticalCoordinate);
+        int row = jsonNode.get("row").asInt();
+        int column = jsonNode.get("column").asInt();
+        return new Coordinate(row, column);
     }
 }
