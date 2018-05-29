@@ -3,6 +3,8 @@ package org.evwhite.algorithmapi.resource;
 import org.evwhite.algorithmapi.Coordinate;
 import org.evwhite.algorithmapi.GameConfig;
 import org.evwhite.algorithmapi.response.Answer;
+import org.evwhite.algorithmapi.service.CGOLService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +21,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class GenericController {
 
     private final AtomicLong counter = new AtomicLong();
+
+    @Autowired
+    private CGOLService cgolService;
 
     @RequestMapping(value = "/fizzbuzz", method = GET)
     public Answer getFizzBuzz(@RequestParam(value = "limit", defaultValue = "50") int limit) {
@@ -45,6 +50,6 @@ public class GenericController {
 
     @RequestMapping(value = "/gameoflife", method = POST)
     public List<Coordinate> playLife(@RequestBody GameConfig gameConfig) {
-        return gameConfig.getStartingAlive();
+        return cgolService.playGameOfLife(gameConfig);
     }
 }
