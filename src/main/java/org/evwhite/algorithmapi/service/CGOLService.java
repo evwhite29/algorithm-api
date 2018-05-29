@@ -10,8 +10,8 @@ import java.util.List;
 @Service
 public class CGOLService {
 
-    private static boolean startingGrid[][];
-    private static boolean resultingGrid[][];
+    private static boolean startGrid[][];
+    private static boolean resultGrid[][];
     private static final Coordinate[] NEIGHBORS = {
             new Coordinate(-1, -1),
             new Coordinate(-1, 0),
@@ -23,37 +23,60 @@ public class CGOLService {
             new Coordinate(1, 1),
     };
 
+    private int realHeight;
+    private int realWidth;
+
     public List<Coordinate> playGameOfLife(GameConfig gameConfig) {
-        int realHeight = gameConfig.getGridHeight();
-        int realWidth = gameConfig.getGridWidth();
+        configureGrid(gameConfig);
+
+        int generationsToSimulate = gameConfig.getGenerations();
+        for (int generations = 1; generations <= generationsToSimulate; ++generations) {
+            createNextGeneration();
+            if (generations != generationsToSimulate) {
+                swapGrids();
+            }
+        }
+
+        return pollAlive();
+    }
+
+    private void swapGrids() {
+        boolean[][] holder = startGrid;
+        startGrid = resultGrid;
+        resultGrid = holder;
+    }
+
+    private void configureGrid(GameConfig gameConfig) {
+        realHeight = gameConfig.getGridHeight();
+        realWidth = gameConfig.getGridWidth();
         int paddedHeight = realHeight + 2;
         int paddedWidth = realWidth + 2;
 
-        startingGrid = new boolean[paddedHeight][paddedWidth];
-        resultingGrid = new boolean[paddedHeight][paddedWidth];
+        startGrid = new boolean[paddedHeight][paddedWidth];
+        resultGrid = new boolean[paddedHeight][paddedWidth];
 
         List<Coordinate> cellsStartingAlive = gameConfig.getStartingAlive();
         for (Coordinate cell: cellsStartingAlive) {
-            startingGrid[cell.getRow() + 1][cell.getColumn() + 1] = true;
+            startGrid[cell.getRow() + 1][cell.getColumn() + 1] = true;
         }
+    }
 
+    private void createNextGeneration() {
         for (int row = 1; row <= realHeight; ++row) {
             for (int col = 1; col <= realWidth; ++ col) {
 
                 int aliveNeighbors = countLiveNeighbors(row, col);
-                resultingGrid[row][col] = determineState(row, col, aliveNeighbors);
+                resultGrid[row][col] = determineState(row, col, aliveNeighbors);
 
             }
         }
-
-        return pollAlive(realHeight, realWidth);
     }
 
     private int countLiveNeighbors(int row, int col) {
         int foundAlive = 0;
 
         for (Coordinate neighbor: NEIGHBORS) {
-            if (startingGrid[row + neighbor.getRow()][col + neighbor.getColumn()]) {
+            if (startGrid[row + neighbor.getRow()][col + neighbor.getColumn()]) {
                 ++foundAlive;
             }
         }
@@ -63,23 +86,24 @@ public class CGOLService {
 
     private boolean determineState(int row, int col, int aliveNeighbors) {
         boolean alive = false;
+        boolean currentCell = startGrid[row][col];
 
-        if (startingGrid[row][col] && (aliveNeighbors == 2 || aliveNeighbors == 3)) {
+        if (currentCell && (aliveNeighbors == 2 || aliveNeighbors == 3)) {
             alive = true;
-        } else if (!startingGrid[row][col] && aliveNeighbors == 3) {
+        } else if (!currentCell && aliveNeighbors == 3) {
             alive = true;
         }
 
         return alive;
     }
 
-    private List<Coordinate> pollAlive(int realHeight, int realWidth) {
+    private List<Coordinate> pollAlive() {
         List<Coordinate> aliveCells = new ArrayList<>();
 
         for (int row = 1; row <= realHeight; ++row) {
             for (int col = 1; col <= realWidth; ++ col) {
 
-                if (resultingGrid[row][col]) {
+                if (resultGrid[row][col]) {
                     aliveCells.add(new Coordinate(row - 1, col - 1));
                 }
 
