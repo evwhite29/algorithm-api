@@ -2,6 +2,7 @@ package org.evwhite.algorithmapi.service;
 
 import org.evwhite.algorithmapi.Coordinate;
 import org.evwhite.algorithmapi.GameConfig;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,9 +11,9 @@ import java.util.List;
 @Service
 public class CGOLService {
 
-    private static boolean startGrid[][];
-    private static boolean resultGrid[][];
-    private static final Coordinate[] NEIGHBORS = {
+    private static boolean[][] startGrid;
+    private static boolean[][] resultGrid;
+    private static final Coordinate[] neighbors = new Coordinate[] {
             new Coordinate(-1, -1),
             new Coordinate(-1, 0),
             new Coordinate(-1, 1),
@@ -20,24 +21,34 @@ public class CGOLService {
             new Coordinate(0, 1),
             new Coordinate(1, -1),
             new Coordinate(1, 0),
-            new Coordinate(1, 1),
+            new Coordinate(1, 1)
     };
 
     private int realHeight;
     private int realWidth;
 
-    public List<Coordinate> playGameOfLife(GameConfig gameConfig) {
-        configureGrid(gameConfig);
+    private int generations;
 
-        int generationsToSimulate = gameConfig.getGenerations();
-        for (int generations = 1; generations <= generationsToSimulate; ++generations) {
-            createNextGeneration();
-            if (generations != generationsToSimulate) {
+    private List<Coordinate> endingAlive;
+
+    public List<Coordinate> playGameOfLife(GameConfig gameConfig) {
+
+        configureGame(gameConfig);
+
+        boolean lastGeneration = false;
+        for (int generation = 1; generation <= generations; ++generation) {
+            if (generation == generations) {
+                lastGeneration = true;
+            }
+
+            makeNextGeneration(lastGeneration);
+
+            if (!lastGeneration) {
                 swapGrids();
             }
         }
 
-        return pollAlive();
+        return endingAlive;
     }
 
     private void swapGrids() {
@@ -46,70 +57,65 @@ public class CGOLService {
         resultGrid = holder;
     }
 
-    private void configureGrid(GameConfig gameConfig) {
+    private void makeNextGeneration(boolean lastGeneration) {
+        for (int row = 1; row <= realHeight; ++row) {
+            for (int column = 1; column <= realWidth; ++column) {
+                int aliveNeighbors = countNeighbors(row, column);
+                resultGrid[row][column] = determineNextState(row, column, aliveNeighbors, lastGeneration);
+            }
+        }
+
+    }
+
+    private void configureGame(GameConfig gameConfig) {
         realHeight = gameConfig.getGridHeight();
         realWidth = gameConfig.getGridWidth();
+        generations = gameConfig.getGenerations();
+
+        if (realHeight <= 0 || realWidth <= 0) {
+            throw new HttpMessageNotReadableException("The grid must have dimensions that are greater than 0");
+        }
+
         int paddedHeight = realHeight + 2;
         int paddedWidth = realWidth + 2;
 
         startGrid = new boolean[paddedHeight][paddedWidth];
         resultGrid = new boolean[paddedHeight][paddedWidth];
 
-        List<Coordinate> cellsStartingAlive = gameConfig.getStartingAlive();
-        for (Coordinate cell: cellsStartingAlive) {
-            startGrid[cell.getRow() + 1][cell.getColumn() + 1] = true;
+        for (Coordinate coordinate : gameConfig.getStartingAlive()) {
+            startGrid[coordinate.getRow() + 1][coordinate.getColumn() + 1] = true;
         }
+
+        endingAlive = new ArrayList<>();
     }
 
-    private void createNextGeneration() {
-        for (int row = 1; row <= realHeight; ++row) {
-            for (int col = 1; col <= realWidth; ++col) {
+    private int countNeighbors(int row, int column) {
+        int alive = 0;
 
-                int aliveNeighbors = countLiveNeighbors(row, col);
-                resultGrid[row][col] = determineState(row, col, aliveNeighbors);
-
+        for (Coordinate coordinate : neighbors) {
+            if (startGrid[row + coordinate.getRow()][column + coordinate.getColumn()]) {
+                ++alive;
             }
-        }
-    }
-
-    private int countLiveNeighbors(int row, int col) {
-        int foundAlive = 0;
-
-        for (Coordinate neighbor: NEIGHBORS) {
-            if (startGrid[row + neighbor.getRow()][col + neighbor.getColumn()]) {
-                ++foundAlive;
-            }
-        }
-
-        return foundAlive;
-    }
-
-    private boolean determineState(int row, int col, int aliveNeighbors) {
-        boolean alive = false;
-        boolean currentCell = startGrid[row][col];
-
-        if (currentCell && (aliveNeighbors == 2 || aliveNeighbors == 3)) {
-            alive = true;
-        } else if (!currentCell && aliveNeighbors == 3) {
-            alive = true;
         }
 
         return alive;
     }
 
-    private List<Coordinate> pollAlive() {
-        List<Coordinate> aliveCells = new ArrayList<>();
+    private boolean determineNextState(int row, int column, int aliveNeighbors, boolean lastGeneration) {
+        boolean currentState = startGrid[row][column];
+        boolean nextState = false;
 
-        for (int row = 1; row <= realHeight; ++row) {
-            for (int col = 1; col <= realWidth; ++col) {
-
-                if (resultGrid[row][col]) {
-                    aliveCells.add(new Coordinate(row - 1, col - 1));
-                }
-
-            }
+        if (currentState && (aliveNeighbors == 2 || aliveNeighbors == 3)) {
+            nextState = true;
+        } else if (!currentState && aliveNeighbors == 3) {
+            nextState = true;
         }
 
-        return aliveCells;
+        if (lastGeneration && nextState) {
+            endingAlive.add(new Coordinate(row - 1, column - 1));
+        }
+
+        return nextState;
     }
+
 }
