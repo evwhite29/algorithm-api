@@ -63,7 +63,7 @@ public class CGOLService {
 
     private void createNextGeneration() {
         for (int row = 1; row <= realHeight; ++row) {
-            for (int col = 1; col <= realWidth; ++ col) {
+            for (int col = 1; col <= realWidth; ++col) {
 
                 int aliveNeighbors = countLiveNeighbors(row, col);
                 resultGrid[row][col] = determineState(row, col, aliveNeighbors);
@@ -101,7 +101,7 @@ public class CGOLService {
         List<Coordinate> aliveCells = new ArrayList<>();
 
         for (int row = 1; row <= realHeight; ++row) {
-            for (int col = 1; col <= realWidth; ++ col) {
+            for (int col = 1; col <= realWidth; ++col) {
 
                 if (resultGrid[row][col]) {
                     aliveCells.add(new Coordinate(row - 1, col - 1));
